@@ -118,8 +118,28 @@ func (s *Scanner) scanWhitespace() Token {
 	return Token{WhiteSpace, output.String()}
 }
 
-// scanIdent consumes the current rune and all contiguous ident runes.
-func (s *Scanner) scanIdent() (tok Token, lit string) {
+func (s *Scanner) scanString() Token {
+	// Create a buffer and read the current character into it.
+	var buf bytes.Buffer
+	buf.WriteRune(s.read())
+
+	// Read every subsequent ident character into the buffer.
+	// Non-ident characters and EOF will cause the loop to exit.
+	for {
+		if ch := s.read(); ch == '"' || ch == EOF {
+			break
+		} else if !isLetter(ch) && !isDigit(ch) {
+			s.unread()
+			break
+		} else {
+			_, _ = buf.WriteRune(ch)
+		}
+	}
+
+	return Token{String, buf.String()}
+}
+
+func (s *Scanner) scanContiguous() Token {
 	// Create a buffer and read the current character into it.
 	var buf bytes.Buffer
 	buf.WriteRune(s.read())
@@ -137,16 +157,17 @@ func (s *Scanner) scanIdent() (tok Token, lit string) {
 		}
 	}
 
-	// If the string matches a keyword then return that keyword.
-	switch strings.ToUpper(buf.String()) {
-	case "SELECT":
-		return SELECT, buf.String()
-	case "FROM":
-		return FROM, buf.String()
+	value := buf.String()
+	switch strings.ToUpper(value) {
+	case "NULL":
+		return Token{NULL, "null"}
+	case "FALSE":
+		return Token{Boolean, "false"}
+	case "TRUE":
+		return Token{Boolean, "true"}
 	}
 
-	// Otherwise return as a regular identifier.
-	return IDENT, buf.String()
+	return Token{Numeric, value}
 }
 
 func (s *Scanner) Scan() *Token {
@@ -167,6 +188,9 @@ func (s *Scanner) Scan() *Token {
 		return &Token{Colon, ":"}
 	case ',':
 		return &Token{Comma, ","}
+	case '"':
+		value := s.scanString()
+		return &value
 	}
 
 	s.unread()
@@ -174,11 +198,9 @@ func (s *Scanner) Scan() *Token {
 		value := s.scanWhitespace()
 		return &value
 	}
-	else if isLetter(ch) {
-		return s.scanIdent()
-	}
 
-	return nil
+	value := s.scanContiguous()
+	return &value
 }
 
 func (s *Scanner) Analyze() Tokens {
