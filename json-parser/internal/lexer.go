@@ -128,9 +128,6 @@ func (s *Scanner) scanString() Token {
 	for {
 		if ch := s.read(); ch == '"' || ch == EOF {
 			break
-		} else if !isLetter(ch) && !isDigit(ch) {
-			s.unread()
-			break
 		} else {
 			_, _ = buf.WriteRune(ch)
 		}
@@ -166,7 +163,6 @@ func (s *Scanner) scanContiguous() Token {
 	case "TRUE":
 		return Token{Boolean, "true"}
 	}
-
 	return Token{Numeric, value}
 }
 
