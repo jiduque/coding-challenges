@@ -73,7 +73,7 @@ func TestKeyValueString(t *testing.T) {
 func TestSeveralValues(t *testing.T) {
 	inputs := []string{
 		"{\n  \"key1\": true,\n  \"key2\": false,\n  \"key3\": null,\n  \"key4\": \"value\",\n  \"key5\": 101\n}",
-		"{\n  \"key\": \"value\",\n  \"key-n\": 101,\n  \"key-o\": {},\n  \"key-l\": []\n}",
+		"{\n  \"key\": \"value\",\n  \"key-n\": 101,\n  \"key-o\": {},\n  \"key-l\": [   ]\n}",
 	}
 
 	expectedValues := []internal.Tokens{
@@ -137,6 +137,7 @@ func TestSeveralValues(t *testing.T) {
 			internal.Token{Type: internal.Colon, Value: ":"},
 			internal.Token{Type: internal.WhiteSpace, Value: " "},
 			internal.Token{Type: internal.LeftBracket, Value: "["},
+			internal.Token{Type: internal.WhiteSpace, Value: "   "},
 			internal.Token{Type: internal.RightBracket, Value: "]"},
 			internal.Token{Type: internal.WhiteSpace, Value: "\n"},
 			internal.Token{Type: internal.RightBrace, Value: "}"},
